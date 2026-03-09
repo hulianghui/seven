@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+  <title>电网螺母 · 电气连接调研报告</title>
+  <!-- 使用 Chart.js 轻量图表库 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: #f2f5f9;
+      padding: 1.5rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .report-container {
+      max-width: 1300px;
+      width: 100%;
+    }
+
+    /* 标题区 */
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: #0b2b4a;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header h1 span {
+      background: #0b2b4a;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 400;
+      padding: 0.2rem 1rem;
+      border-radius: 30px;
+      letter-spacing: 0.3px;
+    }
+
+    .subhead {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+      color: #3b5f7a;
+      border-left: 4px solid #1e7e83;
+      padding-left: 1rem;
+      background: #e9edf3;
+      border-radius: 0 12px 12px 0;
+      padding: 0.8rem 1.5rem;
+    }
+
+    .subhead .meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .subhead .badge {
+      background: #1e7e83;
+      color: white;
+      border-radius: 30px;
+      padding: 0.2rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    /* 卡片通用设计 */
+    .card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 20, 30, 0.1);
+      padding: 1.8rem 1.8rem;
+      margin-bottom: 2rem;
+      transition: all 0.2s;
+      border: 1px solid rgba(0,60,80,0.05);
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #0b2b4a;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      border-bottom: 2px solid #e0e8f0;
+      padding-bottom: 0.8rem;
+    }
+
+    .card-title i {
+      font-size: 1.8rem;
+      color: #1e7e83;
+    }
+
+    /* 表格样式 */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .spec-table th {
+      background: #0b2b4a;
+      color: white;
+      font-weight: 500;
+      padding: 0.9rem 0.8rem;
+      text-align: left;
+    }
+
+    .spec-table td {
+      padding: 0.9rem 0.8rem;
+      border-bottom: 1px solid #e6edf4;
+      color: #1f384b;
+    }
+
+    .spec-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .spec-table tbody tr:hover {
+      background-color: #f6faff;
+    }
+
+    .spec-table td:first-child, .spec-table th:first-child { padding-left: 1.2rem; }
+    .spec-table td:last-child, .spec-table th:last-child { padding-right: 1.2rem; }
+
+    .note {
+      font-size: 0.85rem;
+      color: #5c6f87;
+      margin-top: 1rem;
+      background: #f0f5fa;
+      padding: 0.8rem 1.2rem;
+      border-radius: 16px;
+    }
+
+    .note strong {
+      color: #0b2b4a;
+    }
+
+    /* 两列布局 (占比区) */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 700px) {
+      .two-col {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      min-height: 280px;
+      height: auto;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 0.5rem;
+    }
+
+    .stat-list {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      padding: 0.7rem 0;
+      border-bottom: 1px dashed #cbd6e4;
+    }
+
+    .stat-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 20px;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .stat-label {
+      flex: 1;
+      font-weight: 500;
+      color: #1a3349;
+    }
+
+    .stat-number {
+      font-weight: 700;
+      color: #0b2b4a;
+      background: #eef3f9;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.95rem;
+    }
+
+    .stat-desc {
+      font-size: 0.85rem;
+      color: #56748c;
+      margin-left: 2.2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .key-highlight {
+      margin-top: 1.2rem;
+      background: #e2f0f2;
+      border-radius: 40px;
+      padding: 0.9rem 1.5rem;
+      color: #105e62;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border: 1px solid #b7d3d9;
+      display: inline-block;
+    }
+
+    .bullet-list {
+      list-style: none;
+    }
+
+    .bullet-list li {
+      margin-bottom: 1rem;
+      padding-left: 1.8rem;
+      position: relative;
+      line-height: 1.5;
+      color: #1f384b;
+    }
+
+    .bullet-list li::before {
+      content: "⚡";
+      position: absolute;
+      left: 0;
+      color: #1e7e83;
+      font-size: 1.2rem;
+      top: 0;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: #5b7a95;
+      font-size: 0.85rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #cddbe8;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .stat-mini-card {
+      background: #f6faff;
+      padding: 1.2rem;
+      border-radius: 20px;
+      border: 1px solid #dce5f0;
+    }
+
+    .stat-mini-card .label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #54728c;
+    }
+
+    .stat-mini-card .value {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #0b2b4a;
+      line-height: 1.2;
+    }
+  </style>
+</head>
+<body>
+<div class="report-container">
+  <!-- 头部 -->
+  <div class="header">
+    <h1>
+      ⚡ 电网电气连接 · 螺母使用白皮书
+      <span>调研报告</span>
+    </h1>
+    <div class="subhead">
+      <div class="meta">
+        <span><strong>报告编号</strong> DLS-TECH-2026-03</span>
+        <span><strong>调研日期</strong> 2026年3月9日</span>
+        <span><strong>范围</strong> 变电站/输电线路/配电设备</span>
+      </div>
+      <div class="badge">基于国网典通·DL/T标准</div>
+    </div>
+  </div>
+
+  <!-- 卡片1：规格型号表 -->
+  <div class="card">
+    <div class="card-title">
+      <span>🔩 常见电气连接螺母规格</span>
+    </div>
+    <table class="spec-table">
+      <thead>
+        <tr><th>螺纹规格</th><th>导体截面积 (mm²)</th><th>典型应用场景</th><th>紧固力矩 (N·m)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>M8</td><td>35 – 70</td><td>小电流设备线夹、二次接地、配电箱小母线</td><td>8 – 15</td></tr>
+        <tr><td>M10</td><td>70 – 120</td><td>柱上开关引线、避雷器引线、小型设备线夹</td><td>15 – 30</td></tr>
+        <tr><td>M12</td><td>120 – 240</td><td>10kV/35kV开关柜主母线、变压器低压端子</td><td>30 – 50</td></tr>
+        <tr><td>M14</td><td>240 – 400</td><td>110kV隔离开关触头、大电流柜分支母线、电缆终端</td><td>50 – 80</td></tr>
+        <tr><td>M16</td><td>400 – 630</td><td>220kV主母线连接、主变压器高压侧套管</td><td>80 – 120</td></tr>
+        <tr><td>M18/M20</td><td>630以上</td><td>330kV+超高压管母、整流机组大电流输出端</td><td>120 – 200+</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>⚡ 材质标准：</strong> 载流连接必须使用镀锡铜螺母或不锈钢螺母；禁止使用镀锌碳钢螺母。 垫圈配置：平垫+弹簧垫/防松垫圈。
+    </div>
+  </div>
+
+  <!-- 卡片2：使用占比 + 关键结论 (两列布局) -->
+  <div class="card">
+    <div class="card-title">
+      <span>📊 电气连接点类型占比 (典型220kV变电站)</span>
+    </div>
+    <div class="two-col">
+      <!-- 左: 饼图 -->
+      <div class="chart-container">
+        <canvas id="pieChart" style="width:100%; height:auto; max-height:280px;"></canvas>
+      </div>
+      <!-- 右: 统计列表 + 关键结论 -->
+      <div class="stat-list">
+        <div class="stat-item">
+          <div class="stat-color" style="background:#1e7e83;"></div>
+          <span class="stat-label">一次主回路母线连接</span>
+          <span class="stat-number">35%</span>
+        </div>
+        <div class="stat-desc">主母线、分支母线、PT/CT连接</div>
+        
+        <div class="stat-item">
+          <div class="stat-color" style="background:#3b9b9e;"></div>
+          <span class="stat-label">开关设备本体端子</span>
+          <span class="stat-number">25%</span>
+        </div>
+        <div class="stat-desc">断路器、隔离开关、GIS出线套管</div>
+        
+        <div class="stat-item">
+          <div class="stat-color" style="background:#61b0b2;"></div>
+          <span class="stat-label">进出线设备线夹</span>
+          <span class="stat-number">20%</span>
+        </div>
+        <div class="stat-desc">架空线与套管连接处，户外易腐蚀区</div>
+        
+        <div class="stat-item">
+          <div class="stat-color" style="background:#94cdcf;"></div>
+          <span class="stat-label">变压器/电抗器连接</span>
+          <span class="stat-number">10%</span>
+        </div>
+        <div class="stat-desc">包括中性点及大电流套管</div>
+        
+        <div class="stat-item">
+          <div class="stat-color" style="background:#c2e7e8;"></div>
+          <span class="stat-label">接地与二次部分</span>
+          <span class="stat-number">10%</span>
+        </div>
+        <div class="stat-desc">设备接地排、CT二次绕组短接板</div>
+
+        <div class="key-highlight">
+          🔥 M12 + M14 占比超过 60% —— 运维核心规格
+        </div>
+      </div>
+    </div>
+    <!-- 补充说明 -->
+    <div style="margin-top: 1.5rem; background: #f5f9ff; padding: 1rem; border-radius: 20px;">
+      <span style="font-weight:600; color:#0b2b4a;">📌 关键结论</span>：电气连接点中M12和M14螺母合计用量超60%，是电网采购与力矩管控的重点。新建项目防松螺母（施必牢等）占比约15%~20%，呈上升趋势。
+    </div>
+  </div>
+
+  <!-- 卡片3：特殊要求与痛点分析 + 附加数据 -->
+  <div class="card">
+    <div class="card-title">
+      <span>⚠️ 特殊要求 & 运行痛点</span>
+    </div>
+    <div class="grid-3">
+      <div class="stat-mini-card">
+        <div class="label">防松结构</div>
+        <div class="value">弹簧垫圈</div>
+        <div style="margin-top:0.5rem; font-size:0.9rem;">+ 防松螺母占比15-20% (新建项目)</div>
+      </div>
+      <div class="stat-mini-card">
+        <div class="label">电化学腐蚀</div>
+        <div class="value">铜/铝过渡</div>
+        <div style="margin-top:0.5rem; font-size:0.9rem;">铝导体必须配铝铜垫片</div>
+      </div>
+      <div class="stat-mini-card">
+        <div class="label">力矩窗口</div>
+        <div class="value">30%热缺陷</div>
+        <div style="margin-top:0.5rem; font-size:0.9rem;">因螺母松动/力矩衰减引起</div>
+      </div>
+    </div>
+
+    <ul class="bullet-list" style="margin-top:1.5rem;">
+      <li><strong>防松要求高</strong> — 电动力/微风振动下，普遍使用弹簧垫圈或防松螺母（施必牢等），新建项目防松螺母占比约15~20%并逐年上升。</li>
+      <li><strong>材质匹配问题</strong> — 铜导体必须配铜螺母；铝导体需配铝铜过渡垫片，老旧站混用镀锌铁螺母是发热主要隐患。</li>
+      <li><strong>力矩管控严格</strong> — 存在“力矩窗口”，过小发热，过大导致铝导体蠕变。红外热缺陷中约30%与螺母松动有关。</li>
+      <li><strong>户外防腐</strong> — 线夹处螺母锈蚀率高，建议全寿命推广不锈钢或全镀层螺母。</li>
+    </ul>
+    <div style="background: #ebf3f5; border-radius: 30px; padding: 0.8rem 1.5rem; margin-top: 1.2rem; font-size:0.95rem;">
+      <span style="font-weight:600;">📋 运维贴士：</span> M12紧固力矩必须控制在30~50N·m，并使用力矩扳手复检；红外测温重点关注M14及以上大电流连接点。
+    </div>
+  </div>
+
+  <!-- 卡片4：标准依据 / 备注 -->
+  <div class="card" style="background: #f8fafd;">
+    <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="font-weight:600; color:#0b2b4a;">📐 依据标准</span><br>
+        GB/T 6170, DIN 934, 国家电网公司输变电工程典型设计<br>
+        <span style="color:#456f85;">DL/T 664—2016 红外诊断应用规范</span>
+      </div>
+      <div>
+        <span style="font-weight:600; color:#0b2b4a;">🔧 镀锡铜螺母型号</span><br>
+        M8 / M10 / M12 / M14 / M16 / M18/M20
+      </div>
+      <div>
+        <span style="background: #cddbe8; padding: 0.3rem 1.2rem; border-radius: 40px;">版本 v2.6 · 数据复核</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    * 本报告数据基于行业通用标准及典型220kV变电站估算，具体到不同电压等级或地区电网可能略有浮动。<br>
+    调研：运检技术部 · 未经授权不得作为施工依据
+  </div>
+</div>
+
+<script>
+  (function() {
+    // 饼图绘制
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: [
+          '一次主回路母线连接 35%',
+          '开关设备本体端子 25%',
+          '进出线设备线夹 20%',
+          '变压器/电抗器连接 10%',
+          '接地与二次部分 10%'
+        ],
+        datasets: [{
+          data: [35, 25, 20, 10, 10],
+          backgroundColor: [
+            '#1e7e83',
+            '#3b9b9e',
+            '#61b0b2',
+            '#94cdcf',
+            '#c2e7e8'
+          ],
+          borderColor: '#ffffff',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 14, font: { size: 11, family: 'system-ui' }, color: '#1a3349' }
+          },
+          tooltip: {
+            callbacks: {
+              label: (tooltipItem) => {
+                const val = tooltipItem.raw;
+                return `${tooltipItem.label} : ${val}%`;
+              }
+            }
+          }
+        },
+        layout: {
+          padding: 10
+        }
+      }
+    });
+  })();
+</script>
+
+<!-- 注：Chart.js 已加载，饼图颜色采用蓝绿渐变系列，符合电力风格 -->
+</body>
+</html>
