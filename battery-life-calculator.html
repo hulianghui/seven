@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电池使用寿命计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            color: #00d9ff;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccd6f6;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+        }
+
+        input::placeholder {
+            color: #5a6a8a;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 153, 204, 0.1) 100%);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: #00d9ff;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .result-label {
+            color: #8892b0;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            color: #00ff88;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+
+        .result-unit {
+            color: #8892b0;
+            font-size: 0.8em;
+        }
+
+        .battery-visual {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .battery-icon {
+            width: 200px;
+            height: 80px;
+            border: 3px solid #00d9ff;
+            border-radius: 10px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 30px;
+            background: #00d9ff;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .battery-level {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00d9ff);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .formula {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #ccd6f6;
+            text-align: center;
+        }
+
+        .tips {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.9em;
+            color: #ffc107;
+        }
+
+        .tips strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔋 电池使用寿命计算器</h1>
+        <p class="subtitle">根据设备参数计算电池预期使用寿命</p>
+        
+        <div class="calculator">
+            <h2 class="section-title">📊 输入参数</h2>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="batteryCapacity">电池容量</label>
+                    <input type="number" id="batteryCapacity" placeholder="例如: 5000" step="1">
+                </div>
+                <div class="input-group">
+                    <label for="capacityUnit">容量单位</label>
+                    <select id="capacityUnit">
+                        <option value="mAh">mAh (毫安时)</option>
+                        <option value="Ah">Ah (安时)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="voltage">电池电压</label>
+                    <input type="number" id="voltage" placeholder="例如: 3.7" step="0.1" value="3.7">
+                </div>
+                <div class="input-group">
+                    <label for="voltageUnit">电压单位</label>
+                    <select id="voltageUnit">
+                        <option value="V">V (伏特)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="current">平均工作电流</label>
+                    <input type="number" id="current" placeholder="例如: 500" step="1">
+                </div>
+                <div class="input-group">
+                    <label for="currentUnit">电流单位</label>
+                    <select id="currentUnit">
+                        <option value="mA">mA (毫安)</option>
+                        <option value="A">A (安培)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="dailyUsage">每日使用时间</label>
+                    <input type="number" id="dailyUsage" placeholder="例如: 8" step="0.5" value="8">
+                </div>
+                <div class="input-group">
+                    <label for="usageUnit">使用时间单位</label>
+                    <select id="usageUnit">
+                        <option value="hours">小时/天</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="batteryType">电池类型</label>
+                <select id="batteryType">
+                    <option value="li-ion">锂离子电池 (Li-ion)</option>
+                    <option value="li-poly">锂聚合物电池 (Li-Po)</option>
+                    <option value="nimh">镍氢电池 (NiMH)</option>
+                    <option value="nicd">镍镉电池 (NiCd)</option>
+                    <option value="lifepo4">磷酸铁锂电池 (LiFePO4)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="temperature">工作环境温度 (°C)</label>
+                <input type="number" id="temperature" placeholder="例如: 25" step="1" value="25">
+            </div>
+
+            <div class="input-group">
+                <label for=" DOD">放电深度 (DOD)</label>
+                <select id="DOD">
+                    <option value="1">100% (完全放电)</option>
+                    <option value="0.8">80% (深度放电)</option>
+                    <option value="0.5" selected>50% (适度放电)</option>
+                    <option value="0.3">30% (浅放电)</option>
+                    <option value="0.2">20% (极浅放电)</option>
+                </select>
+            </div>
+
+            <button class="btn-calculate" onclick="calculateBatteryLife()">⚡ 计算电池使用寿命</button>
+
+            <div class="result" id="result">
+                <h3 class="result-title">📈 计算结果</h3>
+                
+                <div class="battery-visual">
+                    <div class="battery-icon">
+                        <div class="battery-level" id="batteryLevel" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">理论续航时间</div>
+                        <div class="result-value" id="runtime">--</div>
+                        <div class="result-unit" id="runtimeUnit">小时</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">预计可用天数</div>
+                        <div class="result-value" id="days">--</div>
+                        <div class="result-unit">天</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">充电周期</div>
+                        <div class="result-value" id="cycles">--</div>
+                        <div class="result-unit">次</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">预计使用寿命</div>
+                        <div class="result-value" id="lifetime">--</div>
+                        <div class="result-unit" id="lifetimeUnit">年</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">能量消耗</div>
+                        <div class="result-value" id="energy">--</div>
+                        <div class="result-unit" id="energyUnit">Wh/天</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">容量衰减系数</div>
+                        <div class="result-value" id="decay">--</div>
+                        <div class="result-unit">@<span id="tempDisplay">25</span>°C</div>
+                    </div>
+                </div>
+
+                <div class="formula" id="formula">
+                    计算公式将显示在这里
+                </div>
+
+                <div class="tips" id="tips">
+                    <strong>💡 使用建议：</strong>
+                    <span id="tipsText">请输入参数后计算</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 电池类型参考数据
+        const batteryData = {
+            'li-ion': {
+                name: '锂离子电池',
+                cycles: 500,
+                selfDischarge: 0.02,
+                optimalTemp: { min: 15, max: 35 }
+            },
+            'li-poly': {
+                name: '锂聚合物电池',
+                cycles: 400,
+                selfDischarge: 0.03,
+                optimalTemp: { min: 15, max: 35 }
+            },
+            'nimh': {
+                name: '镍氢电池',
+                cycles: 500,
+                selfDischarge: 0.20,
+                optimalTemp: { min: 10, max: 30 }
+            },
+            'nicd': {
+                name: '镍镉电池',
+                cycles: 1000,
+                selfDischarge: 0.15,
+                optimalTemp: { min: 10, max: 30 }
+            },
+            'lifepo4': {
+                name: '磷酸铁锂电池',
+                cycles: 2000,
+                selfDischarge: 0.03,
+                optimalTemp: { min: 15, max: 45 }
+            }
+        };
+
+        // 温度对电池寿命的影响系数
+        function getTempFactor(temp, batteryType) {
+            const optimal = batteryData[batteryType].optimalTemp;
+            if (temp >= optimal.min && temp <= optimal.max) {
+                return 1.0;
+            }
+            if (temp < optimal.min) {
+                return Math.max(0.5, 1 - (optimal.min - temp) * 0.02);
+            }
+            return Math.max(0.3, 1 - (temp - optimal.max) * 0.05);
+        }
+
+        // 获取DOD对应的循环次数系数
+        function getDodFactor(dod) {
+            return 1 / dod;
+        }
+
+        function calculateBatteryLife() {
+            // 获取输入值
+            let capacity = parseFloat(document.getElementById('batteryCapacity').value);
+            const capacityUnit = document.getElementById('capacityUnit').value;
+            const voltage = parseFloat(document.getElementById('voltage').value);
+            let current = parseFloat(document.getElementById('current').value);
+            const currentUnit = document.getElementById('currentUnit').value;
+            const dailyUsage = parseFloat(document.getElementById('dailyUsage').value);
+            const batteryType = document.getElementById('batteryType').value;
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const dod = parseFloat(document.getElementById('DOD').value);
+
+            // 验证输入
+            if (!capacity || !current || !voltage || !dailyUsage) {
+                alert('请填写所有必填字段！');
+                return;
+            }
+
+            // 单位转换
+            if (capacityUnit === 'Ah') {
+                capacity = capacity * 1000; // 转换为 mAh
+            }
+            if (currentUnit === 'A') {
+                current = current * 1000; // 转换为 mA
+            }
+
+            // 计算理论运行时间 (小时)
+            const runtime = capacity / current;
+
+            // 计算每日消耗能量 (Wh)
+            const dailyEnergy = (voltage * current * dailyUsage) / 1000;
+
+            // 考虑DOD的有效容量
+            const effectiveCapacity = capacity * dod;
+
+            // 考虑DOD后的运行时间
+            const effectiveRuntime = effectiveCapacity / current;
+
+            // 计算每日使用时间后的可用天数
+            const days = effectiveRuntime / dailyUsage;
+
+            // 获取电池类型参数
+            const batInfo = batteryData[batteryType];
+
+            // 计算温度影响系数
+            const tempFactor = getTempFactor(temperature, batteryType);
+
+            // 计算DOD影响系数
+            const dodFactor = getDodFactor(dod);
+
+            // 计算总循环寿命周期
+            const totalCycles = Math.floor(batInfo.cycles * tempFactor * (dodFactor > 1 ? 1/dodFactor : 1));
+
+            // 计算预计使用寿命 (年)
+            const years = (totalCycles * dod) / (365);
+
+            // 计算容量衰减系数
+            const decayRate = (1 - (totalCycles / batInfo.cycles)) * 100;
+
+            // 更新显示
+            document.getElementById('runtime').textContent = effectiveRuntime.toFixed(1);
+            document.getElementById('days').textContent = days.toFixed(1);
+            document.getElementById('cycles').textContent = totalCycles;
+            document.getElementById('lifetime').textContent = years.toFixed(1);
+            document.getElementById('energy').textContent = dailyEnergy.toFixed(2);
+            document.getElementById('tempDisplay').textContent = temperature;
+            document.getElementById('decay').textContent = decayRate.toFixed(1) + '%';
+
+            // 更新电池可视化
+            const batteryLevel = document.getElementById('batteryLevel');
+            const levelPercent = Math.min(100, (effectiveCapacity / capacity) * 100 * dod);
+            batteryLevel.style.width = levelPercent + '%';
+            batteryLevel.textContent = Math.round(levelPercent) + '%';
+
+            // 更新公式显示
+            const formulaText = `
+                理论运行时间 = 电池容量 ÷ 工作电流 = ${capacity}mAh ÷ ${current}mA = ${runtime.toFixed(1)} 小时<br>
+                有效运行时间 = 理论时间 × DOD = ${runtime.toFixed(1)} × ${dod} = ${effectiveRuntime.toFixed(1)} 小时<br>
+                可用天数 = 有效运行时间 ÷ 每日使用 = ${effectiveRuntime.toFixed(1)} ÷ ${dailyUsage} = ${days.toFixed(1)} 天<br>
+                预计寿命 = 循环次数 × DOD ÷ 365 = ${totalCycles} × ${dod} ÷ 365 = ${years.toFixed(1)} 年<br>
+                (考虑温度系数: ${tempFactor.toFixed(2)})
+            `;
+            document.getElementById('formula').innerHTML = formulaText;
+
+            // 生成建议
+            let tips = '';
+            if (temperature < 10) {
+                tips = '⚠️ 低温环境会显著降低电池性能，建议在温暖环境下使用和存放。';
+            } else if (temperature > 35) {
+                tips = '⚠️ 高温环境会加速电池衰减，建议避免在高温环境中使用。';
+            } else if (dod < 0.5) {
+                tips = '💡 浅放电有助于延长电池寿命，建议电量低于20%时及时充电。';
+            } else {
+                tips = '💡 建议使用原装充电器，避免过充过放，可延长电池使用寿命。';
+            }
+            document.getElementById('tipsText').textContent = tips;
+
+            // 显示结果
+            document.getElementById('result').classList.add('show');
+        }
+
+        // 监听输入变化，实时更新
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('change', function() {
+                if (document.getElementById('result').classList.contains('show')) {
+                    calculateBatteryLife();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
