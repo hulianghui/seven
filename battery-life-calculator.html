@@ -1,927 +1,801 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>低功耗设备电池寿命计算器</title>
- <style>
- * {
- box-sizing: border-box;
- font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
- }
- body {
- background: linear-gradient(135deg, #e8f4f8 0%, #d1e9f0 50%, #b8dde6 100%);
- margin: 0;
- min-height: 100vh;
- display: flex;
- justify-content: center;
- align-items: flex-start;
- padding: 2rem 1rem;
- }
- .calculator-card {
- max-width: 800px;
- width: 100%;
- background: white;
- border-radius: 28px;
- box-shadow: 0 20px 60px -12px rgba(10,42,59,0.25);
- padding: 2rem 2rem 2.5rem;
- transition: all 0.3s;
- }
- h1 {
- font-size: 1.9rem;
- font-weight: 600;
- color: #0a2a3b;
- margin-top: 0;
- margin-bottom: 0.25rem;
- letter-spacing: -0.01em;
- display: flex;
- align-items: center;
- gap: 10px;
- flex-wrap: wrap;
- }
- h1 small {
- font-size: 0.85rem;
- font-weight: 400;
- color: #5e7a8c;
- margin-left: auto;
- }
- .subhead {
- color: #2c4a5e;
- border-left: 4px solid #2b7a8a;
- padding-left: 1rem;
- margin: 0.5rem 0 2rem 0;
- font-weight: 350;
- font-size: 1rem;
- line-height: 1.5;
- }
- .section-title {
- font-weight: 600;
- color: #1d4e63;
- margin: 1.8rem 0 1rem 0;
- font-size: 1.15rem;
- border-bottom: 2px solid #cbd8e4;
- padding-bottom: 0.5rem;
- display: flex;
- align-items: center;
- gap: 8px;
- }
- .param-grid {
- display: flex;
- flex-wrap: wrap;
- gap: 1.2rem 1.8rem;
- background: linear-gradient(135deg, #f7fafc 0%, #edf5f9 100%);
- padding: 1.4rem 1.6rem;
- border-radius: 24px;
- margin-bottom: 0.5rem;
- border: 1px solid #e2ebf2;
- }
- .input-group {
- flex: 1 1 180px;
- min-width: 160px;
- }
- .input-group label {
- display: block;
- font-size: 0.78rem;
- font-weight: 650;
- text-transform: uppercase;
- letter-spacing: 0.04em;
- color: #3a6378;
- margin-bottom: 0.35rem;
- }
- .input-group input, .input-group select {
- width: 100%;
- padding: 0.75rem 1rem;
- border: 1.5px solid #cbd6e2;
- border-radius: 18px;
- font-size: 1rem;
- background: white;
- transition: 0.2s;
- outline: none;
- color: #1a3a4a;
- }
- .input-group input:focus, .input-group select:focus {
- border-color: #2b7a8a;
- box-shadow: 0 0 0 3px rgba(43,122,138,0.15);
- }
- .input-group select {
- cursor: pointer;
- appearance: none;
- background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233a6378' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
- background-repeat: no-repeat;
- background-position: right 1rem center;
- padding-right: 2.5rem;
- }
- .input-group input[type=number] {
- -moz-appearance: textfield;
- }
- .input-group input[type=number]::-webkit-outer-spin-button,
- .input-group input[type=number]::-webkit-inner-spin-button {
- -webkit-appearance: none;
- margin: 0;
- }
- .states-header {
- display: flex;
- justify-content: space-between;
- align-items: center;
- margin: 1rem 0 1.2rem 0;
- flex-wrap: wrap;
- gap: 10px;
- }
- .states-header span {
- color: #2c5a6e;
- font-weight: 500;
- font-size: 0.95rem;
- }
- .btn-add {
- background: linear-gradient(135deg, #e1f0f5 0%, #d4eaef 100%);
- border: none;
- padding: 0.55rem 1.3rem;
- border-radius: 40px;
- font-weight: 550;
- color: #115a6b;
- cursor: pointer;
- font-size: 0.9rem;
- display: inline-flex;
- align-items: center;
- gap: 5px;
- border: 1.5px solid #acc7d4;
- transition: all 0.15s;
- }
- .btn-add:hover {
- background: linear-gradient(135deg, #c8e2ec 0%, #bdd9e6 100%);
- border-color: #7fa9bc;
- transform: translateY(-1px);
- }
- .state-row {
- display: flex;
- gap: 12px;
- align-items: center;
- background: #ffffff;
- padding: 0.9rem 1.1rem;
- border-radius: 60px;
- margin-bottom: 10px;
- box-shadow: 0 3px 10px rgba(0,0,0,0.04);
- border: 1.5px solid #deeaf1;
- transition: all 0.15s;
- }
- .state-row:hover {
- border-color: #b8d0dc;
- box-shadow: 0 4px 14px rgba(0,0,0,0.06);
- }
- .state-fields {
- display: flex;
- flex: 4;
- gap: 12px;
- flex-wrap: wrap;
- }
- .state-field {
- flex: 1 1 140px;
- display: flex;
- align-items: center;
- gap: 6px;
- background: linear-gradient(135deg, #f2f7fa 0%, #e8f2f6 100%);
- padding: 0.3rem 0.9rem 0.3rem 1.1rem;
- border-radius: 30px;
- border: 1px solid #d8e6ed;
- }
- .state-field span {
- color: #2f6073;
- font-weight: 600;
- font-size: 0.85rem;
- white-space: nowrap;
- }
- .state-field input {
- border: none;
- background: transparent;
- padding: 0.5rem 0;
- width: 85px;
- font-size: 0.95rem;
- outline: none;
- text-align: right;
- border-bottom: 1.5px dashed #acc7d4;
- color: #1a3a4a;
- font-weight: 500;
- transition: border-color 0.15s;
- }
- .state-field input:focus {
- border-bottom: 2px solid #2b7a8a;
- }
- .state-field input::placeholder {
- color: #a8c0cf;
- font-weight: 400;
- }
- .state-desc {
- flex: 2;
- min-width: 120px;
- }
- .state-desc input {
- border: none;
- background: #f8fbfd;
- padding: 0.6rem 1rem;
- width: 100%;
- font-size: 0.85rem;
- border-radius: 20px;
- border: 1px solid #dbe8f0;
- outline: none;
- color: #3a5a6a;
- }
- .state-desc input:focus {
- border-color: #2b7a8a;
- box-shadow: 0 0 0 2px rgba(43,122,138,0.1);
- }
- .state-desc input::placeholder {
- color: #9ab8c8;
- }
- .delete-btn {
- background: none;
- border: 1.5px solid #e8d0d0;
- color: #b55a5a;
- font-size: 1.1rem;
- line-height: 1;
- width: 36px;
- height: 36px;
- border-radius: 50%;
- cursor: pointer;
- display: flex;
- align-items: center;
- justify-content: center;
- transition: all 0.15s;
- background: linear-gradient(135deg, #fff5f5 0%, #ffefef 100%);
- font-weight: 500;
- margin-left: auto;
- flex-shrink: 0;
- }
- .delete-btn:hover {
- background: linear-gradient(135deg, #f5dada 0%, #f0c8c8 100%);
- border-color: #c47070;
- color: #a13030;
- transform: scale(1.05);
- }
- .delete-btn:disabled {
- opacity: 0.25;
- pointer-events: none;
- }
- .btn-calc {
- background: linear-gradient(135deg, #2b7a8a 0%, #1f6575 100%);
- color: white;
- border: none;
- padding: 1.1rem 2.5rem;
- border-radius: 50px;
- font-size: 1.15rem;
- font-weight: 650;
- cursor: pointer;
- box-shadow: 0 8px 20px -8px #1b5060;
- transition: all 0.2s;
- margin: 2.2rem 0 1.8rem 0;
- width: 100%;
- letter-spacing: 0.8px;
- text-transform: uppercase;
- }
- .btn-calc:hover {
- background: linear-gradient(135deg, #236a7a 0%, #185565 100%);
- transform: translateY(-2px);
- box-shadow: 0 12px 24px -10px #14505e;
- }
- .btn-calc:active {
- transform: translateY(0);
- }
- .results {
- background: linear-gradient(135deg, #e5f0f5 0%, #d9e9f0 100%);
- border-radius: 32px;
- padding: 1.6rem 2rem;
- border: 1.5px solid #bdd3df;
- display: none;
- }
- .results.show {
- display: block;
- animation: fadeSlideIn 0.4s ease-out;
- }
- @keyframes fadeSlideIn {
- from {
- opacity: 0;
- transform: translateY(15px);
- }
- to {
- opacity: 1;
- transform: translateY(0);
- }
- }
- .results h3 {
- margin: 0 0 1rem 0;
- color: #043545;
- font-weight: 600;
- display: flex;
- align-items: center;
- gap: 8px;
- font-size: 1.2rem;
- }
- .result-grid {
- display: flex;
- flex-wrap: wrap;
- gap: 1rem 1.5rem;
- justify-content: space-between;
- }
- .result-item {
- background: white;
- border-radius: 20px;
- padding: 0.9rem 1.4rem;
- flex: 1 1 120px;
- text-align: center;
- box-shadow: inset 0 1px 4px #cddde9;
- min-width: 100px;
- }
- .result-label {
- font-size: 0.68rem;
- text-transform: uppercase;
- color: #2f6073;
- letter-spacing: 0.05em;
- font-weight: 600;
- margin-bottom: 0.3rem;
- }
- .result-value {
- font-size: 1.45rem;
- font-weight: 700;
- color: #0a3342;
- line-height: 1.3;
- }
- .result-unit {
- font-size: 0.78rem;
- color: #577e94;
- margin-left: 2px;
- font-weight: 500;
- }
- .life-values {
- display: flex;
- flex-wrap: wrap;
- gap: 1rem;
- margin-top: 1.2rem;
- justify-content: center;
- }
- .life-badge {
- background: linear-gradient(135deg, #ffffff 0%, #f8fbfd 100%);
- border-radius: 50px;
- padding: 0.8rem 1.6rem;
- box-shadow: 0 3px 12px #b5cfdd;
- font-size: 1.15rem;
- font-weight: 650;
- color: #115a6b;
- display: flex;
- align-items: baseline;
- gap: 6px;
- border: 1px solid #d0e2eb;
- }
- .life-badge strong {
- font-size: 1.5rem;
- color: #0a3a4a;
- }
- .life-badge small {
- font-size: 0.85rem;
- font-weight: 450;
- color: #3f778b;
- }
- .formula-box {
- margin-top: 1.2rem;
- background: rgba(255,255,255,0.6);
- border-radius: 16px;
- padding: 1rem 1.2rem;
- border: 1px dashed #b8ccd6;
- font-size: 0.82rem;
- color: #3a5a6a;
- line-height: 1.6;
- font-family: 'Consolas', 'Monaco', monospace;
- }
- .formula-box .label {
- font-weight: 600;
- color: #1d4e63;
- margin-bottom: 0.4rem;
- display: block;
- }
- .footnote {
- margin-top: 1.4rem;
- font-size: 0.8rem;
- color: #467586;
- text-align: center;
- border-top: 1px dashed #b9cfdd;
- padding-top: 1rem;
- line-height: 1.5;
- }
- .error-message {
- color: #b13e3e;
- background: linear-gradient(135deg, #ffe8e8 0%, #ffdcdc 100%);
- border-radius: 50px;
- padding: 0.7rem 1.5rem;
- margin: 1rem 0 0;
- font-weight: 550;
- display: none;
- border: 1px solid #e8c8c8;
- }
- .error-message.show {
- display: block;
- animation: shake 0.3s ease;
- }
- @keyframes shake {
- 0%, 100% { transform: translateX(0); }
- 25% { transform: translateX(-5px); }
- 75% { transform: translateX(5px); }
- }
- .battery-visual {
- margin-top: 1.5rem;
- text-align: center;
- display: none;
- }
- .battery-visual.show {
- display: block;
- }
- .battery-icon {
- width: 180px;
- height: 70px;
- border: 3px solid #2b7a8a;
- border-radius: 10px;
- margin: 0 auto;
- position: relative;
- overflow: hidden;
- background: #f0f8fa;
- }
- .battery-icon::after {
- content: '';
- position: absolute;
- right: -9px;
- top: 50%;
- transform: translateY(-50%);
- width: 7px;
- height: 25px;
- background: #2b7a8a;
- border-radius: 0 4px 4px 0;
- }
- .battery-level {
- height: 100%;
- background: linear-gradient(90deg, #2b7a8a, #3a9aa8);
- transition: width 0.8s ease;
- display: flex;
- align-items: center;
- justify-content: center;
- color: white;
- font-weight: 600;
- font-size: 0.9rem;
- }
- .tips-box {
- margin-top: 1rem;
- padding: 1rem 1.2rem;
- background: linear-gradient(135deg, #fffbe6 0%, #fff8d6 100%);
- border-radius: 16px;
- border: 1px solid #f0e4a8;
- font-size: 0.85rem;
- color: #6b5a20;
- display: none;
- }
- .tips-box.show {
- display: block;
- }
- .tips-box strong {
- color: #5a4a18;
- }
- @media (max-width: 600px) {
- .calculator-card {
- padding: 1.5rem 1.2rem 2rem;
- border-radius: 20px;
- }
- h1 {
- font-size: 1.5rem;
- }
- .param-grid {
- padding: 1rem 1.2rem;
- }
- .input-group {
- min-width: 100%;
- }
- .state-row {
- flex-wrap: wrap;
- padding: 0.8rem;
- }
- .state-fields {
- flex: 1 1 100%;
- }
- .state-desc {
- flex: 1 1 100%;
- margin-top: 0.5rem;
- }
- .life-badge {
- padding: 0.6rem 1.2rem;
- font-size: 1rem;
- }
- .life-badge strong {
- font-size: 1.2rem;
- }
- }
- </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>低功耗设备电池寿命计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 6px;
+            font-size: 2em;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-title {
+            color: #00d9ff;
+            font-size: 1.05em;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 基础参数网格 */
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-row-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .input-row, .input-row-4 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .input-row, .input-row-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: #ccd6f6;
+            font-size: 0.88em;
+        }
+
+        input, select {
+            padding: 11px 14px;
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 12px rgba(0, 217, 255, 0.25);
+        }
+
+        input::placeholder {
+            color: #4a5a7a;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        /* 工作状态区域 */
+        .states-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .states-hint {
+            color: #8892b0;
+            font-size: 0.85em;
+        }
+
+        .btn-add {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.4);
+            color: #00d9ff;
+            padding: 7px 18px;
+            border-radius: 30px;
+            font-size: 0.88em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-add:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.2);
+        }
+
+        /* 状态行 */
+        .state-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(0, 217, 255, 0.12);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .state-row:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .state-index {
+            color: #00d9ff;
+            font-size: 0.8em;
+            font-weight: 700;
+            min-width: 22px;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .state-fields {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .state-field {
+            flex: 1 1 110px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .state-field label {
+            font-size: 0.72em;
+            color: #6a7a9a;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .state-field input {
+            padding: 8px 10px;
+            font-size: 0.9em;
+            border-radius: 8px;
+        }
+
+        .state-field.desc-field {
+            flex: 2 1 160px;
+        }
+
+        .delete-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            background: rgba(255, 80, 80, 0.08);
+            color: #ff8080;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 80, 80, 0.2);
+            border-color: rgba(255, 80, 80, 0.6);
+            color: #ff5555;
+        }
+
+        .delete-btn:disabled {
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        /* 计算按钮 */
+        .btn-calculate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        /* 错误提示 */
+        .error-msg {
+            background: rgba(255, 80, 80, 0.12);
+            border: 1px solid rgba(255, 80, 80, 0.4);
+            color: #ff9090;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-top: 14px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* 结果区域 */
+        .result {
+            margin-top: 30px;
+            padding: 26px;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.07) 0%, rgba(0, 153, 204, 0.07) 100%);
+            border-radius: 18px;
+            border: 1px solid rgba(0, 217, 255, 0.25);
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            color: #00d9ff;
+            font-size: 1.15em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 寿命大数字 */
+        .life-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .life-badge {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 16px;
+            padding: 16px 28px;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .life-badge .val {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #00ff88;
+            line-height: 1.1;
+        }
+
+        .life-badge .unit {
+            font-size: 0.85em;
+            color: #8892b0;
+            margin-top: 4px;
+        }
+
+        /* 详细数据网格 */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result-label {
+            color: #8892b0;
+            font-size: 0.72em;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            color: #00d9ff;
+            font-size: 1.25em;
+            font-weight: 700;
+        }
+
+        .result-unit {
+            color: #6a7a9a;
+            font-size: 0.78em;
+            margin-left: 2px;
+        }
+
+        /* 电池可视化 */
+        .battery-visual {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .battery-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .battery-body {
+            width: 200px;
+            height: 72px;
+            border: 3px solid #00d9ff;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .battery-fill {
+            height: 100%;
+            transition: width 1s ease, background 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1em;
+            color: #000;
+        }
+
+        .battery-cap {
+            width: 8px;
+            height: 28px;
+            background: #00d9ff;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* 公式展示 */
+        .formula-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.82em;
+            color: #a0b4c8;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .formula-box .f-title {
+            color: #00d9ff;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.95em;
+        }
+
+        /* 建议提示 */
+        .tips-box {
+            background: rgba(255, 200, 0, 0.08);
+            border-left: 3px solid #ffc107;
+            border-radius: 0 10px 10px 0;
+            padding: 12px 16px;
+            font-size: 0.88em;
+            color: #ffd060;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
- <div class="calculator-card">
- <h1>
- 🔋 低功耗设备电池寿命计算器
- <small>v2.0 · 多状态加权模型</small>
- </h1>
- <div class="subhead">基于加权平均电流模型计算，支持多工作状态、自放电与利用系数，适用于物联网传感器、低功耗设备等</div>
+<div class="container">
+    <h1>🔋 低功耗设备电池寿命计算器</h1>
+    <p class="subtitle">多状态加权平均模型 · 适用于 IoT 传感器、无线测温等低功耗设备</p>
 
- <!-- 电池基础参数 -->
- <div class="section-title">⚙️ 电池参数</div>
- <div class="param-grid">
- <div class="input-group">
- <label>🔋 标称容量 (mAh)</label>
- <input type="number" id="capacity" step="0.1" min="0" value="4000" placeholder="例: 4000">
- </div>
- <div class="input-group">
- <label>⚡ 标称电压 (V)</label>
- <input type="number" id="voltage" step="0.1" min="0" value="3.6" placeholder="例: 3.6">
- </div>
- <div class="input-group">
- <label>📊 利用系数 (0~1)</label>
- <input type="number" id="utilFactor" step="0.01" min="0" max="1" value="0.9" placeholder="0.8~1.0">
- </div>
- <div class="input-group">
- <label>⏳ 年自放电率 (%)</label>
- <input type="number" id="selfDischarge" step="0.1" min="0" value="2" placeholder="通常 1~5%">
- </div>
- </div>
+    <div class="calculator">
 
- <!-- 动态工作状态区域 -->
- <div class="section-title">📈 工作状态 (周期内)</div>
- <div class="states-header">
- <span>电流 (mA) · 持续时间 (秒) · 状态描述</span>
- <button class="btn-add" id="addStateBtn" type="button">➕ 添加状态</button>
- </div>
+        <!-- 电池基础参数 -->
+        <div class="section-title">⚙️ 电池参数</div>
+        <div class="input-row-4">
+            <div class="input-group">
+                <label>标称容量 (mAh)</label>
+                <input type="number" id="capacity" step="0.1" min="0" value="4000" placeholder="例: 4000">
+            </div>
+            <div class="input-group">
+                <label>标称电压 (V)</label>
+                <input type="number" id="voltage" step="0.1" min="0" value="3.6" placeholder="例: 3.6">
+            </div>
+            <div class="input-group">
+                <label>利用系数 (0~1)</label>
+                <input type="number" id="utilFactor" step="0.01" min="0" max="1" value="0.9" placeholder="0.8~1.0">
+            </div>
+            <div class="input-group">
+                <label>年自放电率 (%)</label>
+                <input type="number" id="selfDischarge" step="0.1" min="0" value="2" placeholder="通常 1~5%">
+            </div>
+        </div>
 
- <div id="statesContainer">
- </div>
+        <!-- 工作状态 -->
+        <div class="section-title" style="margin-top: 10px;">📈 工作状态（一个完整周期内）</div>
+        <div class="states-header">
+            <span class="states-hint">填写每个工作状态的电流和持续时间，计算器自动加权平均</span>
+            <button class="btn-add" id="addStateBtn" type="button">➕ 添加状态</button>
+        </div>
 
- <!-- 计算按钮 -->
- <button class="btn-calc" id="calcBtn">⚡ 计算电池寿命</button>
+        <div id="statesContainer"></div>
 
- <!-- 计算结果展示区 -->
- <div class="results" id="resultsArea">
- <h3>📋 预估结果</h3>
- <div class="result-grid">
- <div class="result-item">
- <div class="result-label">平均电流 (不含自放)</div>
- <div><span class="result-value" id="resIAvg">0</span><span class="result-unit">mA</span></div>
- </div>
- <div class="result-item">
- <div class="result-label">自放电等效电流</div>
- <div><span class="result-value" id="resISelf">0</span><span class="result-unit">mA</span></div>
- </div>
- <div class="result-item">
- <div class="result-label">总平均电流</div>
- <div><span class="result-value" id="resITotal">0</span><span class="result-unit">mA</span></div>
- </div>
- <div class="result-item">
- <div class="result-label">有效容量</div>
- <div><span class="result-value" id="resCEff">0</span><span class="result-unit">mAh</span></div>
- </div>
- <div class="result-item">
- <div class="result-label">周期总时长</div>
- <div><span class="result-value" id="resPeriod">0</span><span class="result-unit">秒</span></div>
- </div>
- <div class="result-item">
- <div class="result-label">每日耗电</div>
- <div><span class="result-value" id="resDaily">0</span><span class="result-unit">mAh</span></div>
- </div>
- </div>
- 
- <div class="life-values">
- <div class="life-badge"><strong id="resLifeH">0</strong> <small>小时</small></div>
- <div class="life-badge"><strong id="resLifeD">0</strong> <small>天</small></div>
- <div class="life-badge"><strong id="resLifeY">0</strong> <small>年</small></div>
- </div>
+        <!-- 计算按钮 -->
+        <button class="btn-calculate" id="calcBtn">⚡ 计算电池使用寿命</button>
 
- <div class="battery-visual" id="batteryVisual">
- <div class="battery-icon">
- <div class="battery-level" id="batteryLevel" style="width: 0%">0%</div>
- </div>
- </div>
+        <!-- 错误提示 -->
+        <div class="error-msg" id="errorMsg"></div>
 
- <div class="formula-box" id="formulaBox">
- <span class="label">📐 计算公式：</span>
- <span id="formulaText"></span>
- </div>
+        <!-- 结果区域 -->
+        <div class="result" id="result">
+            <div class="result-title">📊 预估结果</div>
 
- <div class="tips-box" id="tipsBox">
- </div>
- </div>
+            <!-- 寿命大数字 -->
+            <div class="life-badges">
+                <div class="life-badge">
+                    <div class="val" id="resLifeH">—</div>
+                    <div class="unit">小时</div>
+                </div>
+                <div class="life-badge">
+                    <div class="val" id="resLifeD">—</div>
+                    <div class="unit">天</div>
+                </div>
+                <div class="life-badge">
+                    <div class="val" id="resLifeY">—</div>
+                    <div class="unit">年</div>
+                </div>
+            </div>
 
- <div id="errorMsg" class="error-message"></div>
+            <!-- 电池可视化 -->
+            <div class="battery-visual">
+                <div class="battery-wrap">
+                    <div class="battery-body">
+                        <div class="battery-fill" id="batteryFill" style="width:0%"></div>
+                    </div>
+                    <div class="battery-cap"></div>
+                </div>
+            </div>
 
- <div class="footnote">
- * 假设周期性稳定运行，不计脉冲非线性。<br>
- * 实际寿命受温度、放电深度、电池老化等因素影响，结果仅供参考。
- </div>
- </div>
+            <!-- 详细数据 -->
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-label">加权平均电流</div>
+                    <div><span class="result-value" id="resIAvg">—</span><span class="result-unit">mA</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">自放电等效电流</div>
+                    <div><span class="result-value" id="resISelf">—</span><span class="result-unit">mA</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">总平均电流</div>
+                    <div><span class="result-value" id="resITotal">—</span><span class="result-unit">mA</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">有效容量</div>
+                    <div><span class="result-value" id="resCEff">—</span><span class="result-unit">mAh</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">周期时长</div>
+                    <div><span class="result-value" id="resPeriod">—</span><span class="result-unit">秒</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">每日耗电</div>
+                    <div><span class="result-value" id="resDaily">—</span><span class="result-unit">mAh</span></div>
+                </div>
+            </div>
 
- <script>
- (function() {
- // DOM 元素
- const container = document.getElementById('statesContainer');
- const addBtn = document.getElementById('addStateBtn');
- const calcBtn = document.getElementById('calcBtn');
- const resultsDiv = document.getElementById('resultsArea');
- const errorDiv = document.getElementById('errorMsg');
- const batteryVisual = document.getElementById('batteryVisual');
- const tipsBox = document.getElementById('tipsBox');
+            <!-- 公式 -->
+            <div class="formula-box">
+                <span class="f-title">📐 计算过程</span>
+                <span id="formulaText"></span>
+            </div>
 
- // 结果展示字段
- const resIAvg = document.getElementById('resIAvg');
- const resISelf = document.getElementById('resISelf');
- const resITotal = document.getElementById('resITotal');
- const resCEff = document.getElementById('resCEff');
- const resPeriod = document.getElementById('resPeriod');
- const resDaily = document.getElementById('resDaily');
- const resLifeH = document.getElementById('resLifeH');
- const resLifeD = document.getElementById('resLifeD');
- const resLifeY = document.getElementById('resLifeY');
- const batteryLevel = document.getElementById('batteryLevel');
- const formulaText = document.getElementById('formulaText');
+            <!-- 建议 -->
+            <div class="tips-box" id="tipsBox"></div>
+        </div>
 
- // 预设状态模板（可选）
- const stateTemplates = [
- { current: 50, time: 1, desc: '发送数据' },
- { current: 0.5, time: 59, desc: '休眠' },
- ];
+    </div>
+</div>
 
- // 工具函数：创建一行状态
- function createStateRow(currentVal, timeVal, descVal) {
- const row = document.createElement('div');
- row.className = 'state-row';
+<script>
+(function () {
+    const container = document.getElementById('statesContainer');
+    const addBtn = document.getElementById('addStateBtn');
+    const calcBtn = document.getElementById('calcBtn');
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('errorMsg');
 
- // 字段容器
- const fieldsDiv = document.createElement('div');
- fieldsDiv.className = 'state-fields';
+    // 创建状态行
+    function createStateRow(currentVal, timeVal, descVal, index) {
+        const row = document.createElement('div');
+        row.className = 'state-row';
 
- // 电流字段
- const currentField = document.createElement('div');
- currentField.className = 'state-field';
- currentField.innerHTML = `<span>mA</span>`;
- const currentInput = document.createElement('input');
- currentInput.type = 'number';
- currentInput.step = '0.001';
- currentInput.min = '0';
- currentInput.placeholder = '0.0';
- currentInput.value = currentVal;
- currentField.appendChild(currentInput);
+        // 序号
+        const idx = document.createElement('div');
+        idx.className = 'state-index';
+        idx.textContent = '#' + (index || 1);
+        row.appendChild(idx);
 
- // 时间字段
- const timeField = document.createElement('div');
- timeField.className = 'state-field';
- timeField.innerHTML = `<span>秒</span>`;
- const timeInput = document.createElement('input');
- timeInput.type = 'number';
- timeInput.step = '0.1';
- timeInput.min = '0';
- timeInput.placeholder = '0.0';
- timeInput.value = timeVal;
- timeField.appendChild(timeInput);
+        // 字段区
+        const fields = document.createElement('div');
+        fields.className = 'state-fields';
 
- fieldsDiv.appendChild(currentField);
- fieldsDiv.appendChild(timeField);
- row.appendChild(fieldsDiv);
+        // 电流
+        const fCurrent = document.createElement('div');
+        fCurrent.className = 'state-field';
+        fCurrent.innerHTML = '<label>电流 (mA)</label>';
+        const iInput = document.createElement('input');
+        iInput.type = 'number'; iInput.step = '0.001'; iInput.min = '0';
+        iInput.placeholder = '例: 50';
+        iInput.value = currentVal !== undefined ? currentVal : '';
+        fCurrent.appendChild(iInput);
 
- // 描述字段
- const descField = document.createElement('div');
- descField.className = 'state-desc';
- const descInput = document.createElement('input');
- descInput.type = 'text';
- descInput.placeholder = '状态描述，如：发射/休眠';
- descInput.value = descVal || '';
- descField.appendChild(descInput);
- row.appendChild(descField);
+        // 时间
+        const fTime = document.createElement('div');
+        fTime.className = 'state-field';
+        fTime.innerHTML = '<label>持续时间 (秒)</label>';
+        const tInput = document.createElement('input');
+        tInput.type = 'number'; tInput.step = '0.1'; tInput.min = '0';
+        tInput.placeholder = '例: 2';
+        tInput.value = timeVal !== undefined ? timeVal : '';
+        fTime.appendChild(tInput);
 
- // 删除按钮
- const delBtn = document.createElement('button');
- delBtn.className = 'delete-btn';
- delBtn.type = 'button';
- delBtn.innerHTML = '✕';
- row.appendChild(delBtn);
+        // 描述
+        const fDesc = document.createElement('div');
+        fDesc.className = 'state-field desc-field';
+        fDesc.innerHTML = '<label>状态描述（可选）</label>';
+        const dInput = document.createElement('input');
+        dInput.type = 'text';
+        dInput.placeholder = '如：发送数据 / 休眠';
+        dInput.value = descVal || '';
+        fDesc.appendChild(dInput);
 
- return row;
- }
+        fields.appendChild(fCurrent);
+        fields.appendChild(fTime);
+        fields.appendChild(fDesc);
+        row.appendChild(fields);
 
- // 初始化：添加一行（空）
- function initOneRow() {
- container.innerHTML = '';
- container.appendChild(createStateRow('', '', ''));
- }
- initOneRow();
+        // 删除按钮
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.type = 'button';
+        delBtn.innerHTML = '✕';
+        row.appendChild(delBtn);
 
- // 添加状态
- addBtn.addEventListener('click', function() {
- container.appendChild(createStateRow('', '', ''));
- });
+        return row;
+    }
 
- // 删除状态 (通过事件委托)
- container.addEventListener('click', function(e) {
- const target = e.target;
- if (target.classList.contains('delete-btn')) {
- const row = target.closest('.state-row');
- if (!row) return;
- const rows = document.querySelectorAll('.state-row');
- if (rows.length <= 1) {
- showError('至少保留一个工作状态');
- return;
- }
- row.remove();
- hideError();
- }
- });
+    // 重新编号所有行
+    function reindex() {
+        container.querySelectorAll('.state-row').forEach((row, i) => {
+            const idx = row.querySelector('.state-index');
+            if (idx) idx.textContent = '#' + (i + 1);
+        });
+    }
 
- // 辅助：显示错误信息
- function showError(msg) {
- errorDiv.textContent = msg;
- errorDiv.classList.add('show');
- resultsDiv.classList.remove('show');
- batteryVisual.classList.remove('show');
- tipsBox.classList.remove('show');
- }
- function hideError() {
- errorDiv.classList.remove('show');
- }
+    // 初始化两行示例
+    function init() {
+        container.innerHTML = '';
+        const defaults = [
+            { i: 50, t: 2, d: '发送数据' },
+            { i: 0.5, t: 58, d: '休眠' },
+        ];
+        defaults.forEach((s, idx) => {
+            container.appendChild(createStateRow(s.i, s.t, s.d, idx + 1));
+        });
+    }
+    init();
 
- // 计算逻辑
- calcBtn.addEventListener('click', function() {
- hideError();
+    // 添加状态
+    addBtn.addEventListener('click', function () {
+        const rows = container.querySelectorAll('.state-row');
+        container.appendChild(createStateRow('', '', '', rows.length + 1));
+        reindex();
+    });
 
- // 1. 读取电池参数
- const capacityInput = document.getElementById('capacity');
- const voltageInput = document.getElementById('voltage');
- const utilInput = document.getElementById('utilFactor');
- const selfInput = document.getElementById('selfDischarge');
+    // 删除状态（事件委托）
+    container.addEventListener('click', function (e) {
+        if (e.target.classList.contains('delete-btn')) {
+            const row = e.target.closest('.state-row');
+            if (!row) return;
+            if (container.querySelectorAll('.state-row').length <= 1) {
+                showError('⚠️ 至少保留一个工作状态');
+                return;
+            }
+            row.remove();
+            reindex();
+            hideError();
+        }
+    });
 
- const capacity = parseFloat(capacityInput.value);
- const voltage = parseFloat(voltageInput.value);
- const util = parseFloat(utilInput.value);
- const selfPerYear = parseFloat(selfInput.value);
+    function showError(msg) {
+        errorDiv.textContent = msg;
+        errorDiv.classList.add('show');
+        resultDiv.classList.remove('show');
+    }
+    function hideError() {
+        errorDiv.classList.remove('show');
+    }
 
- // 参数验证
- if (isNaN(capacity) || capacity <= 0) {
- showError('⚠️ 电池容量必须为正数');
- return;
- }
- if (isNaN(voltage) || voltage <= 0) {
- showError('⚠️ 电池电压必须为正数');
- return;
- }
- if (isNaN(util) || util <= 0 || util > 1) {
- showError('⚠️ 利用系数需在0~1之间（通常0.8~1.0）');
- return;
- }
- if (isNaN(selfPerYear) || selfPerYear < 0) {
- showError('⚠️ 自放电率不能为负数');
- return;
- }
+    // 计算
+    calcBtn.addEventListener('click', function () {
+        hideError();
 
- // 2. 获取所有状态行
- const rows = document.querySelectorAll('.state-row');
- if (rows.length === 0) {
- showError('⚠️ 请添加至少一个工作状态');
- return;
- }
+        const capacity = parseFloat(document.getElementById('capacity').value);
+        const voltage = parseFloat(document.getElementById('voltage').value);
+        const util = parseFloat(document.getElementById('utilFactor').value);
+        const selfPerYear = parseFloat(document.getElementById('selfDischarge').value);
 
- let totalTime = 0;
- let totalCharge = 0; // mA*s
- let valid = true;
- let validStates = [];
+        if (isNaN(capacity) || capacity <= 0) return showError('⚠️ 电池容量必须为正数');
+        if (isNaN(voltage) || voltage <= 0) return showError('⚠️ 电池电压必须为正数');
+        if (isNaN(util) || util <= 0 || util > 1) return showError('⚠️ 利用系数需在 0~1 之间');
+        if (isNaN(selfPerYear) || selfPerYear < 0) return showError('⚠️ 自放电率不能为负数');
 
- rows.forEach((row, index) => {
- const inputs = row.querySelectorAll('.state-field input');
- const descInput = row.querySelector('.state-desc input');
- if (inputs.length !== 2) return;
- const currentVal = inputs[0].value.trim();
- const timeVal = inputs[1].value.trim();
- const descVal = descInput ? descInput.value.trim() : `状态${index+1}`;
+        const rows = container.querySelectorAll('.state-row');
+        if (rows.length === 0) return showError('⚠️ 请添加至少一个工作状态');
 
- if (currentVal === '' || timeVal === '') {
- showError(`⚠️ 第 ${index+1} 行请填写完整 (电流和时间)`);
- valid = false;
- return;
- }
+        let totalTime = 0, totalCharge = 0;
+        let valid = true;
 
- const i = parseFloat(currentVal);
- const t = parseFloat(timeVal);
+        rows.forEach((row, idx) => {
+            const inputs = row.querySelectorAll('.state-field input[type=number]');
+            if (inputs.length < 2) return;
+            const iVal = inputs[0].value.trim();
+            const tVal = inputs[1].value.trim();
 
- if (isNaN(i) || i < 0 || isNaN(t) || t < 0) {
- showError(`⚠️ 第 ${index+1} 行包含无效数值，请填入非负数`);
- valid = false;
- return;
- }
+            if (iVal === '' || tVal === '') {
+                showError(`⚠️ 第 ${idx + 1} 行请填写完整（电流和时间）`);
+                valid = false; return;
+            }
+            const i = parseFloat(iVal), t = parseFloat(tVal);
+            if (isNaN(i) || i < 0 || isNaN(t) || t <= 0) {
+                showError(`⚠️ 第 ${idx + 1} 行数值无效（电流≥0，时间>0）`);
+                valid = false; return;
+            }
+            totalCharge += i * t;
+            totalTime += t;
+        });
 
- if (t === 0 && i > 0) {
- showError(`⚠️ 第 ${index+1} 行为静态电流(时间需>0)或跳过`);
- valid = false;
- return;
- }
+        if (!valid) return;
+        if (totalTime === 0) return showError('⚠️ 总周期时间不能为 0');
 
- totalCharge += i * t;
- totalTime += t;
- validStates.push({ i, t, desc: descVal });
- });
+        const iAvg = totalCharge / totalTime;
+        const iSelf = (capacity * (selfPerYear / 100)) / 8760;
+        const iTotal = iAvg + iSelf;
+        const cEff = capacity * util;
 
- if (!valid || validStates.length === 0) return;
+        if (iTotal <= 0) return showError('⚠️ 总平均电流为 0，请检查输入');
 
- if (totalTime === 0) {
- showError('⚠️ 总周期时间不能为0，请增加状态持续时间');
- return;
- }
+        const lifeH = cEff / iTotal;
+        const lifeD = lifeH / 24;
+        const lifeY = lifeH / 8760;
+        const dailymAh = iTotal * 24;
 
- // 3. 计算中间值
- const iAvg = totalCharge / totalTime; // mA (加权平均，不含自放)
- const hoursPerYear = 8760;
- const iSelf = (capacity * (selfPerYear / 100)) / hoursPerYear; // mA (等效自放电电流)
- const iTotal = iAvg + iSelf;
- const cEff = capacity * util; // mAh (有效容量)
+        // 渲染数值
+        document.getElementById('resLifeH').textContent = lifeH.toFixed(1);
+        document.getElementById('resLifeD').textContent = lifeD.toFixed(1);
+        document.getElementById('resLifeY').textContent = lifeY.toFixed(2);
+        document.getElementById('resIAvg').textContent = iAvg.toFixed(4);
+        document.getElementById('resISelf').textContent = iSelf.toFixed(4);
+        document.getElementById('resITotal').textContent = iTotal.toFixed(4);
+        document.getElementById('resCEff').textContent = cEff.toFixed(1);
+        document.getElementById('resPeriod').textContent = totalTime.toFixed(1);
+        document.getElementById('resDaily').textContent = dailymAh.toFixed(3);
 
- if (iTotal <= 0) {
- showError('⚠️ 总平均电流为0或负值，请检查输入');
- return;
- }
+        // 电池可视化
+        const fill = document.getElementById('batteryFill');
+        let pct = Math.min(100, Math.max(5, lifeY >= 5 ? 100 : lifeY >= 3 ? 80 : lifeY >= 2 ? 60 : lifeY >= 1 ? 40 : lifeY >= 0.5 ? 20 : 8));
+        fill.style.width = pct + '%';
+        fill.textContent = pct + '%';
+        fill.style.background = pct >= 60
+            ? 'linear-gradient(90deg,#00ff88,#00d9aa)'
+            : pct >= 30
+            ? 'linear-gradient(90deg,#ffc107,#ffdd55)'
+            : 'linear-gradient(90deg,#ff5555,#ff8080)';
+        fill.style.color = '#000';
 
- // 4. 计算寿命
- const lifeHours = cEff / iTotal;
- const lifeDays = lifeHours / 24;
- const lifeYears = lifeHours / hoursPerYear;
+        // 公式
+        document.getElementById('formulaText').innerHTML =
+            `I<sub>avg</sub> = Σ(I×T) / ΣT = ${totalCharge.toFixed(3)} / ${totalTime.toFixed(1)} = <b>${iAvg.toFixed(4)} mA</b><br>` +
+            `I<sub>self</sub> = ${capacity} × ${selfPerYear}% / 8760 = <b>${iSelf.toFixed(4)} mA</b><br>` +
+            `I<sub>total</sub> = ${iAvg.toFixed(4)} + ${iSelf.toFixed(4)} = <b>${iTotal.toFixed(4)} mA</b><br>` +
+            `C<sub>eff</sub> = ${capacity} × ${util} = <b>${cEff.toFixed(1)} mAh</b><br>` +
+            `寿命 = ${cEff.toFixed(1)} / ${iTotal.toFixed(4)} = <b>${lifeH.toFixed(1)} h = ${lifeD.toFixed(1)} 天 = ${lifeY.toFixed(2)} 年</b>`;
 
- // 每日消耗
- const dailyConsumption = iTotal * 24; // mAh/天
+        // 建议
+        let tip = '';
+        if (lifeY < 0.5) tip = '⚠️ 寿命较短，建议增大电池容量，或优化工作状态降低平均电流（延长休眠时间、减少发送频率）';
+        else if (lifeY < 1) tip = '💡 寿命不足一年，可考虑增大容量或进一步降低工作电流';
+        else if (lifeY < 2) tip = '✅ 寿命 1~2 年，符合一般低功耗设备预期，可按需优化';
+        else if (lifeY < 5) tip = '✅ 寿命 2~5 年，设计良好，适合长期部署';
+        else tip = '⭐ 寿命超过 5 年，非常优秀！适合免维护长期部署场景';
+        document.getElementById('tipsBox').textContent = tip;
 
- // 5. 渲染结果
- resIAvg.textContent = iAvg.toFixed(3);
- resISelf.textContent = iSelf.toFixed(3);
- resITotal.textContent = iTotal.toFixed(3);
- resCEff.textContent = cEff.toFixed(1);
- resPeriod.textContent = totalTime.toFixed(1);
- resDaily.textContent = dailyConsumption.toFixed(2);
- resLifeH.textContent = lifeHours.toFixed(1);
- resLifeD.textContent = lifeDays.toFixed(1);
- resLifeY.textContent = lifeYears.toFixed(2);
+        resultDiv.classList.add('show');
+    });
 
- // 电池可视化 - 根据预计年数显示
- let batPercent = 100;
- if (lifeYears >= 5) batPercent = 100;
- else if (lifeYears >= 3) batPercent = 80;
- else if (lifeYears >= 2) batPercent = 60;
- else if (lifeYears >= 1) batPercent = 40;
- else if (lifeYears >= 0.5) batPercent = 20;
- else batPercent = 10;
-
- batteryLevel.style.width = batPercent + '%';
- batteryLevel.textContent = batPercent + '%';
-
- // 根据电量改变颜色
- if (batPercent >= 60) {
- batteryLevel.style.background = 'linear-gradient(90deg, #28a745, #34ce57)';
- } else if (batPercent >= 30) {
- batteryLevel.style.background = 'linear-gradient(90deg, #ffc107, #ffcd39)';
- } else {
- batteryLevel.style.background = 'linear-gradient(90deg, #dc3545, #e4606d)';
- }
-
- // 公式展示
- const formulaHtml = `
- I<sub>平均</sub> = Σ(I<sub>i</sub> × T<sub>i</sub>) / ΣT<sub>i</sub> = ${totalCharge.toFixed(2)} / ${totalTime.toFixed(1)} = ${iAvg.toFixed(3)} mA<br>
- I<sub>自放</sub> = 容量 × 自放率 / 8760 = ${capacity} × ${selfPerYear}% / 8760 = ${iSelf.toFixed(4)} mA<br>
- I<sub>总</sub> = I<sub>平均</sub> + I<sub>自放</sub> = ${iAvg.toFixed(3)} + ${iSelf.toFixed(4)} = ${iTotal.toFixed(3)} mA<br>
- 有效容量 = ${capacity} × ${util} = ${cEff.toFixed(1)} mAh<br>
- 寿命 = ${cEff.toFixed(1)} / ${iTotal.toFixed(3)} = ${lifeHours.toFixed(1)} 小时 = ${lifeDays.toFixed(1)} 天 = ${lifeYears.toFixed(2)} 年
- `;
- formulaText.innerHTML = formulaHtml;
-
- // 建议提示
- let tips = '';
- if (lifeYears < 0.5) {
- tips = '⚠️ <strong>寿命较短！</strong>建议：1) 增大电池容量；2) 优化工作状态，缩短高电流持续时间；3) 降低发送频率';
- } else if (lifeYears < 1) {
- tips = '💡 <strong>寿命约半年</strong>，可考虑：1) 增加电池容量；2) 优化休眠电流；3) 减少唤醒次数';
- } else if (lifeYears < 2) {
- tips = '✅ <strong>寿命1-2年</strong>，符合一般电池供电设备预期。如需更久，可优化发射功耗';
- } else if (lifeYears >= 5) {
- tips = '⭐ <strong>寿命超过5年</strong>，非常适合长期部署！可考虑是否需要增加功能';
- } else {
- tips = '✅ <strong>寿命适中</strong>，继续当前设计即可';
- }
- tipsBox.innerHTML = tips;
- tipsBox.classList.add('show');
-
- resultsDiv.classList.add('show');
- batteryVisual.classList.add('show');
- hideError();
- });
-
- // 回车键快速计算
- document.querySelectorAll('input').forEach(input => {
- input.addEventListener('keydown', (e) => {
- if (e.key === 'Enter') {
- e.preventDefault();
- calcBtn.click();
- }
- });
- });
- })();
- </script>
+    // 回车快速计算
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+            e.preventDefault();
+            calcBtn.click();
+        }
+    });
+})();
+</script>
 </body>
 </html>
